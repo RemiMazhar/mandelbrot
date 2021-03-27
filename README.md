@@ -17,7 +17,7 @@ The [wikipedia page](https://en.wikipedia.org/wiki/Mandelbrot_set) of the Mandel
 To define the Mandelbrot set, we first define for each complex number _c_ the sequence _z<sub>n+1</sub>=z<sub>n</sub><sup>2</sup>+c_ with _z<sub>0</sub>=0_. The complex number _c_ is said to belong to the Mandelbrot set if and only if this sequence is bounded.  
 Another way to say it is that you take a complex number _c_ that will remain constant, then you define a variable _z_ with an initial value of zero and you iterate _z=z<sup>2</sup>+c_. If _z_ gets bigger and bigger indefinitely, _c_ does not belong to the Mandelbrot k.  
 However in order to programmatically find if a point belongs to the set, we do not need to iterate indefinitely because of a theorem that proves that if |_z_|>_2_ then the sequence will always diverge Therefore, we only need to iterate the sequence until |_z_|>_2_ to be sure that a number is outsie of the Mandelbrot set. We consider that a number is inside of the Mandelbrot set if |_z_|<_2_ after a sufficiently large number of iterations.  
-We can "plot" the Mandelbrot set by coloring each point of a plane one color if its affix is in the Mandelbrot set, and another color if if the point is outside the Mandelbrot set. Here is the image we get after coloring in white points whose affix belong to the set in white and points whose affix don't belong to the set in black:
+We can "plot" the Mandelbrot set by coloring each point of a plane one color if its affix is in the Mandelbrot set, and another color if if the point is outside the Mandelbrot set. Here is the image we get after coloring in white points whose affix belong to the set in white and points whose affix don't belong to the set in black:  
  ![Mandelbrot set](https://user-images.githubusercontent.com/80780126/112723037-e5a35c00-8f0c-11eb-8e11-18224300ea81.png)  
  The result is a bit strange but we can notice something zooming around the boundaries of the set: it has an unlimited level of details. For example, here is an image of a zoom around the point (-0.135; 0.75):  
  ![image](https://user-images.githubusercontent.com/80780126/112723201-a45f7c00-8f0d-11eb-9fb1-06f3a8ba03fb.png)  
@@ -39,23 +39,23 @@ Rendered with the default kernel, colorFrequency=1.5
 ![image](https://user-images.githubusercontent.com/80780126/112724820-65cdbf80-8f15-11eb-91c7-8db5c2d34364.png)  
    
 Rendered with the default kernel and the IDL_CB-RdGy colormap, colorFrequency=1.5  
- ![image](https://user-images.githubusercontent.com/80780126/112724907-c6f59300-8f15-11eb-8c9a-c30131873859.png)  
+![image](https://user-images.githubusercontent.com/80780126/112724907-c6f59300-8f15-11eb-8c9a-c30131873859.png)  
   
 Rendered with the normal map kernel  
- ![image](https://user-images.githubusercontent.com/80780126/112724963-0fad4c00-8f16-11eb-993e-975ba6f701de.png)  
+![image](https://user-images.githubusercontent.com/80780126/112724963-0fad4c00-8f16-11eb-993e-975ba6f701de.png)  
   
-Rendered with the distance estimator kernel
- ![image](https://user-images.githubusercontent.com/80780126/112725043-69157b00-8f16-11eb-8168-00fd319711c0.png)  
- 
-Rendered with the external rays kernel
- ![image](https://user-images.githubusercontent.com/80780126/112725068-8a766700-8f16-11eb-8a65-88d3e8d8cd2c.png)  
- 
+Rendered with the distance estimator kernel  
+![image](https://user-images.githubusercontent.com/80780126/112725043-69157b00-8f16-11eb-8168-00fd319711c0.png)  
+  
+Rendered with the external rays kernel  
+![image](https://user-images.githubusercontent.com/80780126/112725068-8a766700-8f16-11eb-8a65-88d3e8d8cd2c.png)  
+  
 #### centered on (-0.810618952736284; 0.203130500759388), zoom=1062.2, 10000 iterations
 Rendered with the default kernel, colorFrequency=3.6  
 ![image](https://user-images.githubusercontent.com/80780126/112725216-610a0b00-8f17-11eb-9d64-559c63446a5a.png)  
   
 Rendered with the default kernel and the IDL_CB-RdGy colormap, colorFrequency=3.6  
- ![image](https://user-images.githubusercontent.com/80780126/112725317-d7a70880-8f17-11eb-991a-3a1844bf08e9.png)  
+![image](https://user-images.githubusercontent.com/80780126/112725317-d7a70880-8f17-11eb-991a-3a1844bf08e9.png)  
   
 Rendered with the normal map kernel  
 ![image](https://user-images.githubusercontent.com/80780126/112725343-0ae99780-8f18-11eb-8b51-474553446e18.png)  
