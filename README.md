@@ -33,7 +33,7 @@ To render the Mandelbrot set, this program uses two GLSL shaders:
 * The "kernel", that makes the main computation for each pixel and outputs a value between zero and one. That's where the kind of algorithms described above to color the outside of the set may be implemented. The kernel can be changed at any time while the program is running. A few kernels are included in the /kernels folder, but you can also create your own. Most of the algorithms used in the kernels that I made come either from [there](https://en.wikipedia.org/wiki/Plotting_algorithms_for_the_Mandelbrot_set) or from [there](https://www.math.univ-toulouse.fr/~cheritat/wiki-draw/index.php/Mandelbrot_set).
 * The "colormap" shader. It contains a functions "colormap" that takes a float between 0 and 1 as input and outputs a vec4 corresponding to an RGBA color. One is included in the /colormaps folder, but kbinani made over one hundred other ones downloadable [here](https://github.com/kbinani/colormap-shaders) (I made the program to be compatible with them).
 
-### Examples of images rendered with some kernels
+### Examples of images rendered with different parameters
 #### centered on (0; 0), zoom=0.2, 1000 iterations
 Rendered with the default kernel, colorFrequency=1.5  
 ![image](https://user-images.githubusercontent.com/80780126/112724820-65cdbf80-8f15-11eb-91c7-8db5c2d34364.png)  
@@ -65,3 +65,13 @@ Rendered with the distance estimator kernel
   
 Rendered with the external rays kernel  
 ![image](https://user-images.githubusercontent.com/80780126/112725393-471cf800-8f18-11eb-943a-b0b130fbb20e.png)
+
+#### centered on (-0.834023157993864; 0.231587601463592), zoom=67617, 1000 iterations, default kernel, IDL_CB-RdGy colormap, colorFrequency=3.0
+quality = 1  
+![image](https://user-images.githubusercontent.com/80780126/112734318-4e0e2f80-8f45-11eb-82cf-8a3677552648.png)  
+  
+quality = 2  
+![image](https://user-images.githubusercontent.com/80780126/112734297-346ce800-8f45-11eb-89cc-d3a7866ac79a.png)  
+  
+quality = 3  
+![image](https://user-images.githubusercontent.com/80780126/112734285-228b4500-8f45-11eb-8f17-82250f212108.png)
