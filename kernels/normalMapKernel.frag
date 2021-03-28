@@ -3,6 +3,7 @@ uniform float colorFrequency;
 
 const float lightAngle = 45;
 const double lightHeight = 1;
+const vec2 v = dvec2(cos(radians(lightAngle)), sin(radians(lightAngle)));
 
 float log_b(float x, float a)
 {
@@ -43,8 +44,6 @@ dvec2 complexDivide(dvec2 v1, dvec2 v2)
 
 bool isInside(dvec2 c, out float valueOutput)
 {
-	dvec2 v = dvec2(cos(radians(lightAngle)), sin(radians(lightAngle)));
-
 	dvec2 z = c;
 	dvec2 dc = dvec2(1, 0);
 	dvec2 der = dc;
@@ -60,7 +59,7 @@ bool isInside(dvec2 c, out float valueOutput)
 
 		if (sqNorm > 10000)
 		{
-			dvec2 u = complexDivide(z, der);
+			vec2 u = complexDivide(z, der);
 			u = u / length(u);
 			double t = dot(u, v) + lightHeight;
 			t = t / (1 + lightHeight);
@@ -68,6 +67,5 @@ bool isInside(dvec2 c, out float valueOutput)
 			return false;
 		}
 	}
-	valueOutput = 0;
 	return true;
 }

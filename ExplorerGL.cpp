@@ -36,11 +36,13 @@ void ExplorerGL::initUniforms()
     windowSizeLocation = glGetUniformLocation(mandelbrotProgramID, "windowSize");
     centerPosLocation = glGetUniformLocation(mandelbrotProgramID, "centerPos");
     iterationsLocation = glGetUniformLocation(mandelbrotProgramID, "iterations");
+	qualityLocation = glGetUniformLocation(mandelbrotProgramID, "quality");
     colorFrequencyLocation = glGetUniformLocation(mandelbrotProgramID, "colorFrequency");
     glUniform2f(windowSizeLocation, getWidth(), getHeight());
     glUniform1d(zoomLocation, zoom);
     glUniform2d(centerPosLocation, centerX, centerY);
     glUniform1i(iterationsLocation, iterations);
+	glUniform1i(qualityLocation, quality);
     glUniform1f(colorFrequencyLocation, colorFrequency);
 }
 
@@ -142,6 +144,10 @@ int ExplorerGL::getIterations()
 {
     return iterations;
 }
+int ExplorerGL::getQuality()
+{
+	return quality;
+}
 double ExplorerGL::getZoom()
 {
     return zoom;
@@ -181,6 +187,12 @@ void ExplorerGL::setIterations(int iterationsArg)
     iterations = iterationsArg;
     glUniform1i(iterationsLocation, iterations);
     Refresh();
+}
+void ExplorerGL::setQuality(int qualityArg)
+{
+	quality = qualityArg;
+	glUniform1i(qualityLocation, quality);
+	Refresh();
 }
 void ExplorerGL::setZoomSensivity(double zoomSensivityArg)
 {

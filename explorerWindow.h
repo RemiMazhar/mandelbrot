@@ -3,6 +3,7 @@
 #include <wx/spinctrl.h>
 #include <wx/statline.h>
 #include <wx/filepicker.h>
+#include <wx/splitter.h>
 #include "ExplorerGL.h"
 
 typedef unsigned char uchar;
@@ -23,6 +24,7 @@ private:
 	void colormapChanged(wxFileDirPickerEvent& evt);
 	void kernelChanged(wxFileDirPickerEvent& evt);
 	void updateDisplays(wxCommandEvent& evt);
+	void onKeyPressed(wxKeyEvent &evt);
 
 public:
 	int mode;
@@ -57,6 +59,7 @@ public:
 
 	ExplorerGL* explorer;
 	wxBoxSizer* explorerSizer;
+	wxScrolledWindow* leftPanel;
 
 	wxDECLARE_EVENT_TABLE();
 };

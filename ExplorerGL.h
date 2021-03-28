@@ -32,6 +32,7 @@ class ExplorerGL : public wxGLCanvas
 	double centerX = 0.f;
 	double centerY = 0.f;
 	int iterations = 1000;
+	int quality = 1;
 	float colorFrequency = 3.f;
 	std::string colormapFilename = DEFAULT_COLORMAP;
 	std::string kernelFilename = DEFAULT_KERNEL;
@@ -41,6 +42,7 @@ class ExplorerGL : public wxGLCanvas
 	GLint zoomLocation;
 	GLint centerPosLocation;
 	GLint iterationsLocation;
+	GLint qualityLocation;
 	GLint colormapLocation;
 	GLint colorFrequencyLocation;
 
@@ -63,6 +65,7 @@ public:
 	int getWidth();
 	int getHeight();
 	int getIterations();
+	int getQuality();
 	double getZoom();
 	double getCenterX();
 	double getCenterY();
@@ -73,6 +76,7 @@ public:
 	void setZoom(double zoomArg);
 	void setCenter(double x, double y);
 	void setIterations(int iterationsArg);
+	void setQuality(int qualityArg);
 	void setZoomSensivity(double zoomSensivityArg);
 	void setColormap(const char* filename);
 	void setKernel(const char* filename);
