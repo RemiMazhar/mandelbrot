@@ -1,27 +1,30 @@
-// declare functions that will be defined in another file
-vec4 colormap(float x);
-bool isInside(dvec2 c, out float valueOutput);
-
 uniform vec2 windowSize;
 uniform double zoom;
 uniform dvec2 centerPos;
+uniform int quality;
+
+vec4 getColor(dvec2 c);
 
 void main (void)
 {
+	double pxSize = 1 / zoom / windowSize.y;
+	double increm = pxSize / quality;
+
 	double hZoom = zoom * windowSize.y / windowSize.x;
 	dvec2 c = dvec2(
-		(gl_FragCoord.x / windowSize.x - 0.5) / hZoom + centerPos.x,
-		(gl_FragCoord.y / windowSize.y - 0.5) / zoom  + centerPos.y
+		(gl_FragCoord.x / windowSize.x - 0.5) / hZoom + centerPos.x - pxSize / 2,
+		(gl_FragCoord.y / windowSize.y - 0.5) / zoom  + centerPos.y - pxSize / 2
 	);
 
-	float value;
-	if (isInside(c, value))
+	vec4 avgColor = vec4(0, 0, 0, 0);
+	for (int i = 1; i <= quality; i++)
 	{
-		gl_FragColor = vec4(0, 0, 0, 1);
+		for (int j = 1; j <= quality; j++)
+		{
+			avgColor += getColor(c + dvec2(increm * i, increm * j)) / (quality * quality);
+		}
 	}
-	else
-	{
-		gl_FragColor = colormap(value);
-	}
+
+	gl_FragColor = avgColor;
 	
 }   

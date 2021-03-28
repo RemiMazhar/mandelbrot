@@ -1,3 +1,5 @@
+vec4 colormap(float x);
+
 uniform int iterations;
 uniform float colorFrequency;
 
@@ -28,7 +30,7 @@ void complexSquare(inout dvec2 v)
 	v.y = 2 * x * y;
 }
 
-bool isInside(dvec2 c, out float valueOutput)
+vec4 getColor(dvec2 c)
 {
 	dvec2 z = c;
 	dvec2 der = dvec2(1, 0);
@@ -46,10 +48,8 @@ bool isInside(dvec2 c, out float valueOutput)
 		{
 			der *= thickness / zoom;
 			double derSqNorm = der.x * der.x + der.y * der.y;
-			valueOutput = sqNorm*(pow(log(float(sqNorm)), 2)) < derSqNorm ? 0 : 1;
-			return false;
+			return sqNorm*(pow(log(float(sqNorm)), 2)) < derSqNorm ? colormap(0) : colormap(1);
 		}
 	}
-	valueOutput = 1;
-	return false;
+	return colormap(1);
 }

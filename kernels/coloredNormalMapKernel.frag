@@ -61,11 +61,12 @@ vec4 getColor(dvec2 c)
 
 		if (sqNorm > 10000)
 		{
+			float smoothIterCount = abs(i - log2(log2(sqrt(float(sqNorm)))));
 			vec2 u = complexDivide(z, der);
 			u = u / length(u);
 			float t = dot(u, v) + lightHeight;
 			t = t / (1 + lightHeight);
-			return colormap(t);
+			return t * colormap(abs(sin(log(smoothIterCount) * colorFrequency) / 2.f + 0.5f));
 		}
 	}
 	return vec4(0, 0, 0, 1);
