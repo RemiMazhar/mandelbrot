@@ -41,7 +41,7 @@ Rendered with the default kernel and the IDL_CB-RdGy colormap, colorFrequency=1.
 ![image](https://user-images.githubusercontent.com/80780126/112767247-f8ee1e80-9015-11eb-90b2-49fdeeff924b.png)  
   
 Rendered with the colored normal map kernel and the IDL_CB-RdGy colormap, colorFrequency=1.5 
-![image](https://user-images.githubusercontent.com/80780126/112766484-46688c80-9012-11eb-8249-fb2f610867c9.png)  
+![image](https://user-images.githubusercontent.com/80780126/112767366-acefa980-9016-11eb-9aa7-d99e1f4070d3.png)  
   
 Rendered with the normal map kernel  
 ![image](https://user-images.githubusercontent.com/80780126/112767284-220eaf00-9016-11eb-9946-84ebf63a6748.png)  
