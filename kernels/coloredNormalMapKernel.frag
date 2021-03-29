@@ -4,7 +4,7 @@ uniform int iterations;
 uniform float colorFrequency;
 
 const float lightAngle = 45;
-const float lightHeight = 1;
+const float lightHeight = 1.5;
 const vec2 v = vec2(cos(radians(lightAngle)), sin(radians(lightAngle)));
 
 float log_b(float x, float a)
@@ -32,15 +32,15 @@ dvec2 complexMultiply(dvec2 v1, dvec2 v2)
 	return res;
 }
 
-vec2 complexDivide(dvec2 v1, dvec2 v2)
+dvec2 complexDivide(dvec2 v1, dvec2 v2)
 {
-	vec2 res;
-	float a = float(v1.x);
-	float b = float(v1.y);
-	float c = float(v2.x);
-	float d = float(v2.y);
-	res.x = (a * c + b * d) / (c * c + d * d); 
-	res.y = (b * c - a * d) / (c * c + d * d);
+	dvec2 res;
+	double a = v1.x;
+	double b = v1.y;
+	double c = v2.x;
+	double d = v2.y;
+	res.x = ((a * c + b * d) / (c * c + d * d)); 
+	res.y =((b * c - a * d) / (c * c + d * d));
 	return res;
 }
 
@@ -62,9 +62,9 @@ vec4 getColor(dvec2 c)
 		if (sqNorm > 10000)
 		{
 			float smoothIterCount = abs(i - log2(log2(sqrt(float(sqNorm)))));
-			vec2 u = complexDivide(z, der);
+			dvec2 u = complexDivide(z, der);
 			u = u / length(u);
-			float t = dot(u, v) + lightHeight;
+			float t = float(dot(u, v)) + lightHeight;
 			t = t / (1 + lightHeight);
 			return t * colormap(abs(sin(log(smoothIterCount) * colorFrequency) / 2.f + 0.5f));
 		}
