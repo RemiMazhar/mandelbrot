@@ -14,6 +14,8 @@
 #define COLORMAP_ID 10011
 #define KERNEL_ID 10012
 #define COLOR_FREQ_ID 10013
+#define RENDER_ID 10014
+#define SAVE_BTN_ID 10015
 
 wxBEGIN_EVENT_TABLE(ExplorerWindow, wxWindow)
 // syntax: EVT_BUTTON(10001, OnBtn1Clicked)
@@ -27,7 +29,10 @@ EVT_SPINCTRLDOUBLE(COLOR_FREQ_ID, colorFrequencyChanged)
 EVT_FILEPICKER_CHANGED(COLORMAP_ID, colormapChanged)
 EVT_FILEPICKER_CHANGED(KERNEL_ID, kernelChanged)
 EVT_COMMAND(EXPLORER_ID, EVT_RENDER, updateDisplays)
+EVT_COMMAND(EXPLORER_ID, EVT_FRAGMENT, displayProgress)
 EVT_KEY_UP(onKeyPressed)
+EVT_BUTTON(SAVE_BTN_ID, saveImg)
+EVT_COLLAPSIBLEPANE_CHANGED(RENDER_ID, onRenderResized)
 wxEND_EVENT_TABLE()
 
 ExplorerWindow::ExplorerWindow(wxWindow* parent) : wxWindow(parent, wxID_ANY)
@@ -66,6 +71,17 @@ ExplorerWindow::ExplorerWindow(wxWindow* parent) : wxWindow(parent, wxID_ANY)
 	leftSizer->Add(new wxStaticLine(leftPanel, wxID_ANY), 0, wxEXPAND);
 	leftSizer->AddSpacer(10);
 
+	wxBoxSizer* fpsSizer = new wxBoxSizer(wxHORIZONTAL);
+	wxStaticText* fpsLabel = new wxStaticText(leftPanel, wxID_ANY, "FPS: ");
+	fpsSizer->Add(fpsLabel, 1, wxLEFT | wxALIGN_CENTER_VERTICAL, 10);
+	fpsDisplay = new wxStaticText(leftPanel, wxID_ANY, "0");
+	fpsSizer->Add(fpsDisplay, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 10);
+	leftSizer->Add(fpsSizer, 0, wxEXPAND);
+
+	leftSizer->AddSpacer(10);
+	leftSizer->Add(new wxStaticLine(leftPanel, wxID_ANY), 0, wxEXPAND);
+	leftSizer->AddSpacer(10);
+
 	// input for the quality (refer to [whatever documentation or something like that that i may do in the future] for details)
 	wxBoxSizer* qualitySizer = new wxBoxSizer(wxHORIZONTAL);
 	wxStaticText* qualityLabel = new wxStaticText(leftPanel, wxID_ANY, "quality: ");
@@ -87,7 +103,7 @@ ExplorerWindow::ExplorerWindow(wxWindow* parent) : wxWindow(parent, wxID_ANY)
 	leftSizer->Add(itersSizer, 0, wxEXPAND);
 
 	// input for the mouse sensivity (when zooming)
-	sensivitySizer = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* sensivitySizer = new wxBoxSizer(wxVERTICAL);
 	sensivitySizer->AddSpacer(10);
 	sensivitySizer->Add(new wxStaticLine(leftPanel, wxID_ANY), 0, wxEXPAND);
 	sensivitySizer->AddSpacer(10);
@@ -100,7 +116,7 @@ ExplorerWindow::ExplorerWindow(wxWindow* parent) : wxWindow(parent, wxID_ANY)
 	leftSizer->Add(sensivitySizer, 0, wxEXPAND);
 
 	// input/display for the x coordinate of the center of the image
-	xCoordSizer = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* xCoordSizer = new wxBoxSizer(wxVERTICAL);
 	xCoordSizer->AddSpacer(10);
 	xCoordSizer->Add(new wxStaticLine(leftPanel, wxID_ANY), 0, wxEXPAND);
 	xCoordSizer->AddSpacer(10);
@@ -113,7 +129,7 @@ ExplorerWindow::ExplorerWindow(wxWindow* parent) : wxWindow(parent, wxID_ANY)
 	leftSizer->Add(xCoordSizer, 0, wxEXPAND);
 
 	// input/display for the y coordinate of the center of the image
-	yCoordSizer = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* yCoordSizer = new wxBoxSizer(wxVERTICAL);
 	yCoordSizer->AddSpacer(10);
 	yCoordSizer->Add(new wxStaticLine(leftPanel, wxID_ANY), 0, wxEXPAND);
 	yCoordSizer->AddSpacer(10);
@@ -126,7 +142,7 @@ ExplorerWindow::ExplorerWindow(wxWindow* parent) : wxWindow(parent, wxID_ANY)
 	leftSizer->Add(yCoordSizer, 0, wxEXPAND);
 
 	// input/display for the level of zoom
-	zoomSizer = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* zoomSizer = new wxBoxSizer(wxVERTICAL);
 	zoomSizer->AddSpacer(10);
 	zoomSizer->Add(new wxStaticLine(leftPanel, wxID_ANY), 0, wxEXPAND);
 	zoomSizer->AddSpacer(10);
@@ -143,7 +159,7 @@ ExplorerWindow::ExplorerWindow(wxWindow* parent) : wxWindow(parent, wxID_ANY)
 	leftSizer->AddSpacer(10);
 
 	// input for the color frequency
-	colorFrequencySizer = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* colorFrequencySizer = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* colorFrequencyHSizer = new wxBoxSizer(wxHORIZONTAL);
 	wxStaticText* colorFrequencyLabel = new wxStaticText(leftPanel, wxID_ANY, "color frequency: ");
 	colorFrequencyHSizer->Add(colorFrequencyLabel, 1, wxLEFT | wxALIGN_CENTER_VERTICAL, 10);
@@ -159,7 +175,7 @@ ExplorerWindow::ExplorerWindow(wxWindow* parent) : wxWindow(parent, wxID_ANY)
 	wxStaticText* colormapLabel = new wxStaticText(leftPanel, wxID_ANY, "colormap to use: ");
 	leftSizer->Add(colormapLabel, 0, wxLEFT, 10);
 	leftSizer->AddSpacer(5);
-	colormapSizer = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* colormapSizer = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* colormapHSizer = new wxBoxSizer(wxHORIZONTAL);
 	colormapInput = new wxFilePickerCtrl(leftPanel, COLORMAP_ID, DEFAULT_COLORMAP);
 	colormapHSizer->Add(colormapInput, 1, wxLEFT | wxALIGN_CENTER_VERTICAL | wxRIGHT | wxALIGN_CENTER_VERTICAL, 10);
@@ -179,6 +195,70 @@ ExplorerWindow::ExplorerWindow(wxWindow* parent) : wxWindow(parent, wxID_ANY)
 	kernelHSizer->Add(kernelInput, 1, wxLEFT | wxALIGN_CENTER_VERTICAL | wxRIGHT | wxALIGN_CENTER_VERTICAL, 10);
 	kernelSizer->Add(kernelHSizer, 0, wxEXPAND);
 	leftSizer->Add(kernelSizer, 0, wxEXPAND);
+
+	leftSizer->AddSpacer(10);
+	leftSizer->Add(new wxStaticLine(leftPanel, wxID_ANY), 0, wxEXPAND);
+	leftSizer->AddSpacer(10);
+
+	renderPanel = new wxCollapsiblePane(leftPanel, RENDER_ID, "render", wxDefaultPosition, wxDefaultSize, wxCP_NO_TLW_RESIZE);
+	wxBoxSizer* renderSizer = new wxBoxSizer(wxVERTICAL);
+	renderPanel->GetPane()->SetSizer(renderSizer);
+		
+		wxBoxSizer* rdrWidthSizer = new wxBoxSizer(wxHORIZONTAL);
+		wxStaticText* rdrWidthLabel = new wxStaticText(renderPanel->GetPane(), wxID_ANY, "width: ");
+		rdrWidthSizer->Add(rdrWidthLabel, 1, wxLEFT | wxALIGN_CENTER_VERTICAL, 10);
+		rdrWidthInput = new wxSpinCtrl(renderPanel->GetPane(), wxID_ANY, "1920", wxDefaultPosition, wxSize(60, wxDefaultSize.y), wxSP_ARROW_KEYS, 0, 500000);
+		rdrWidthSizer->Add(rdrWidthInput, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 10);
+		renderSizer->Add(rdrWidthSizer, 0, wxEXPAND);
+
+		renderSizer->AddSpacer(10);
+
+		wxBoxSizer* rdrHeightSizer = new wxBoxSizer(wxHORIZONTAL);
+		wxStaticText* rdrHeightLabel = new wxStaticText(renderPanel->GetPane(), wxID_ANY, "height: ");
+		rdrHeightSizer->Add(rdrHeightLabel, 1, wxLEFT | wxALIGN_CENTER_VERTICAL, 10);
+		rdrHeightInput = new wxSpinCtrl(renderPanel->GetPane(), wxID_ANY, "1080", wxDefaultPosition, wxSize(60, wxDefaultSize.y), wxSP_ARROW_KEYS, 0, 500000);
+		rdrHeightSizer->Add(rdrHeightInput, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 10);
+		renderSizer->Add(rdrHeightSizer, 0, wxEXPAND);
+
+		renderSizer->AddSpacer(10);
+
+		wxBoxSizer* rdrItersSizer = new wxBoxSizer(wxHORIZONTAL);
+		wxStaticText* rdrItersLabel = new wxStaticText(renderPanel->GetPane(), wxID_ANY, "number of iterations: ");
+		rdrItersSizer->Add(rdrItersLabel, 1, wxLEFT | wxALIGN_CENTER_VERTICAL, 10);
+		rdrItersInput = new wxSpinCtrl(renderPanel->GetPane(), wxID_ANY, "1000", wxDefaultPosition, wxSize(60, wxDefaultSize.y), wxSP_ARROW_KEYS, 0, 1e10);
+		rdrItersSizer->Add(rdrItersInput, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 10);
+		renderSizer->Add(rdrItersSizer, 0, wxEXPAND);
+
+		renderSizer->AddSpacer(10);
+
+		wxBoxSizer* rdrQualitySizer = new wxBoxSizer(wxHORIZONTAL);
+		wxStaticText* rdrQualityLabel = new wxStaticText(renderPanel->GetPane(), wxID_ANY, "quality: ");
+		rdrQualitySizer->Add(rdrQualityLabel, 1, wxLEFT | wxALIGN_CENTER_VERTICAL, 10);
+		rdrQualityInput = new wxSpinCtrl(renderPanel->GetPane(), wxID_ANY, "2");
+		rdrQualitySizer->Add(rdrQualityInput, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 10);
+		renderSizer->Add(rdrQualitySizer, 0, wxEXPAND);
+
+		renderSizer->AddSpacer(10);
+
+		wxBoxSizer* rdrFragmentsSizer = new wxBoxSizer(wxHORIZONTAL);
+		wxStaticText* rdrFragmentsLabel = new wxStaticText(renderPanel->GetPane(), wxID_ANY, "number of fragments: ");
+		rdrFragmentsSizer->Add(rdrFragmentsLabel, 1, wxLEFT | wxALIGN_CENTER_VERTICAL, 10);
+		rdrFragmentsInput = new wxSpinCtrl(renderPanel->GetPane(), wxID_ANY, "10", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 10000);
+		rdrFragmentsSizer->Add(rdrFragmentsInput, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 10);
+		renderSizer->Add(rdrFragmentsSizer, 0, wxEXPAND);
+
+		renderSizer->AddSpacer(10);
+
+		saveButton = new wxButton(renderPanel->GetPane(), SAVE_BTN_ID, "SAVE");
+		renderSizer->Add(saveButton, 0, wxALL | wxALIGN_CENTER);
+
+		renderSizer->AddSpacer(10);
+
+		progressDisplay = new wxStaticText(renderPanel->GetPane(), wxID_ANY, "not generating");
+		renderSizer->Add(progressDisplay, 0, wxALL | wxALIGN_CENTER);
+
+
+	leftSizer->Add(renderPanel, 1, wxEXPAND);
 
 	leftSizer->AddSpacer(10);
 	leftSizer->Add(new wxStaticLine(leftPanel, wxID_ANY), 0, wxEXPAND);
@@ -250,6 +330,7 @@ void ExplorerWindow::updateDisplays(wxCommandEvent& evt)
 	zoomInput->SetValue(explorer->getZoom());
 	winWidthDisplay->SetLabelText(wxString::Format(wxT("%d"), explorer->getWidth()));
 	winHeightDisplay->SetLabelText(wxString::Format(wxT("%d"), explorer->getHeight()));
+	fpsDisplay->SetLabelText(wxString::Format(wxT("%d"), explorer->getFPS()));
 	wxWindow::SetFocus();
 	evt.Skip();
 }
@@ -261,6 +342,46 @@ void ExplorerWindow::onKeyPressed(wxKeyEvent& evt)
 		leftPanel->Show(!leftPanel->IsShown());
 		wxWindow::Layout();
 	}
+	evt.Skip();
+}
+
+void ExplorerWindow::saveImg(wxCommandEvent& evt)
+{
+	progressDisplay->SetLabelText(wxString::Format(wxT("starting to generate..."), evt.GetInt(), rdrFragmentsInput->GetValue()));
+	if (rdrHeightInput->GetValue() % rdrFragmentsInput->GetValue() == 0 && rdrWidthInput->GetValue() % 20 == 0)
+	{
+		explorer->renderFullFragmented(
+			rdrItersInput->GetValue(),
+			rdrWidthInput->GetValue(),
+			rdrHeightInput->GetValue(),
+			rdrQualityInput->GetValue(),
+			rdrFragmentsInput->GetValue()
+		);
+	}
+	else
+	{
+		wxMessageBox("The number of fragments must be a divisor of the height and the width must be a multiple of 20 pixels");
+	}
+	evt.Skip();
+}
+
+void ExplorerWindow::displayProgress(wxCommandEvent& evt)
+{
+	if (evt.GetInt() == rdrFragmentsInput->GetValue())
+	{
+		progressDisplay->SetLabelText("finished generating");
+	}
+	else
+	{
+		progressDisplay->SetLabelText(wxString::Format(wxT("generated %d / %d fragments"), evt.GetInt(), rdrFragmentsInput->GetValue()));
+	}
+	renderPanel->Layout();
+	evt.Skip();
+}
+
+void ExplorerWindow::onRenderResized(wxCollapsiblePaneEvent& evt)
+{
+	Layout();
 	evt.Skip();
 }
 

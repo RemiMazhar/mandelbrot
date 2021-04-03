@@ -4,6 +4,7 @@
 #include <wx/statline.h>
 #include <wx/filepicker.h>
 #include <wx/splitter.h>
+#include <wx/collpane.h>
 #include "ExplorerGL.h"
 
 typedef unsigned char uchar;
@@ -24,11 +25,12 @@ private:
 	void colormapChanged(wxFileDirPickerEvent& evt);
 	void kernelChanged(wxFileDirPickerEvent& evt);
 	void updateDisplays(wxCommandEvent& evt);
-	void onKeyPressed(wxKeyEvent &evt);
+	void onKeyPressed(wxKeyEvent& evt);
+	void saveImg(wxCommandEvent& evt);
+	void displayProgress(wxCommandEvent& evt);
+	void onRenderResized(wxCollapsiblePaneEvent& evt);
 
 public:
-	int mode;
-
 	// the main sizers (leftSizer and rightSizer are in the main sizer)
 	wxBoxSizer* mainSizer;
 	wxBoxSizer* leftSizer;
@@ -37,6 +39,8 @@ public:
 	// controls
 	wxStaticText* winWidthDisplay; // display the width of the window
 	wxStaticText* winHeightDisplay; // display the height of the window
+	wxStaticText* fpsDisplay;
+	wxStaticText* progressDisplay;
 	wxSpinCtrl* qualityInput;
 	wxSpinCtrl* itersInput;
 	wxSpinCtrlDouble* sensivityInput;
@@ -46,16 +50,14 @@ public:
 	wxSpinCtrlDouble* colorFrequencyInput;
 	wxFilePickerCtrl* colormapInput;
 	wxFilePickerCtrl* kernelInput;
-
-	// sizer for each control, these sizers are added to leftSizer (the left side is a control panel)
-	// each control needs a horizontal sizer because there is a control and a label on the same line
-	wxBoxSizer* sensivitySizer;
-	wxBoxSizer* xCoordSizer;
-	wxBoxSizer* yCoordSizer;
-	wxBoxSizer* zoomSizer;
-	wxBoxSizer* colorFrequencySizer;
-	wxBoxSizer* colormapSizer;
+	wxSpinCtrl* rdrWidthInput;
+	wxSpinCtrl* rdrHeightInput;
+	wxSpinCtrl* rdrItersInput;
+	wxSpinCtrl* rdrQualityInput;
+	wxSpinCtrl* rdrFragmentsInput;
+	wxButton* saveButton;
 	wxBoxSizer* kernelSizer;
+	wxCollapsiblePane* renderPanel;
 
 	ExplorerGL* explorer;
 	wxBoxSizer* explorerSizer;
