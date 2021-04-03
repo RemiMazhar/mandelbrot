@@ -2,7 +2,7 @@
 #include "wx/wx.h"
 #include <wx/spinctrl.h>
 #include <wx/statline.h>
-#include "explorerWindow.h"
+#include "ExplorerWindow.h"
 
 
 enum modes { exploreMandelbrot, generateVideo, generateImage, NB_MODES };

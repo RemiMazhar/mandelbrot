@@ -12,6 +12,9 @@
 #include <string>
 #include <fstream>
 #include <streambuf>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/imgcodecs.hpp>
 #define MAIN_SHADER "mandelbrotShader.frag"
 #define DEFAULT_COLORMAP "colormaps/IDL_Black-White_Linear.frag"
 #define DEFAULT_KERNEL "kernels/defaultKernel.frag"
