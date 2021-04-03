@@ -23,7 +23,7 @@
 
 class PreviewGL : public wxGLCanvas
 {
-public:
+protected:
 	wxGLContext* m_context;
 
 	GLuint mandelbrotProgramID;
