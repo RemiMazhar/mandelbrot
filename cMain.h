@@ -3,9 +3,11 @@
 #include <wx/spinctrl.h>
 #include <wx/statline.h>
 #include "ExplorerWindow.h"
+#include "JuliaWindow.h"
+#include "PlayerWindow.h"
 
 
-enum modes { exploreMandelbrot, generateVideo, generateImage, NB_MODES };
+enum modes { exploreMandelbrot, julia, watch, NB_MODES };
 typedef unsigned char uchar;
 
 class cMain : public wxFrame
@@ -18,6 +20,8 @@ private:
 	void modeChanged(wxCommandEvent& evt);
 
 	ExplorerWindow* explorerWindow;
+	JuliaWindow* juliaWindow;
+	PlayerWindow* playerWindow;
 
 public:
 	int mode;
