@@ -16,6 +16,9 @@
 #define COLOR_FREQ_ID 10013
 #define RENDER_ID 10014
 #define SAVE_BTN_ID 10015
+#define VIDEO_ID 10016
+#define VIDEO_BTN_ID 10017
+#define LOAD_BTN_ID 10018
 
 wxBEGIN_EVENT_TABLE(ExplorerWindow, wxWindow)
 // syntax: EVT_BUTTON(10001, OnBtn1Clicked)
@@ -29,10 +32,14 @@ EVT_SPINCTRLDOUBLE(COLOR_FREQ_ID, colorFrequencyChanged)
 EVT_FILEPICKER_CHANGED(COLORMAP_ID, colormapChanged)
 EVT_FILEPICKER_CHANGED(KERNEL_ID, kernelChanged)
 EVT_COMMAND(EXPLORER_ID, EVT_RENDER, updateDisplays)
-EVT_COMMAND(EXPLORER_ID, EVT_FRAGMENT, displayProgress)
+EVT_COMMAND(EXPLORER_ID, EVT_FRAGMENT, displayFragsProgress)
+EVT_COMMAND(EXPLORER_ID, EVT_FRAME, displayFramesProgress)
 EVT_KEY_UP(onKeyPressed)
 EVT_BUTTON(SAVE_BTN_ID, saveImg)
-EVT_COLLAPSIBLEPANE_CHANGED(RENDER_ID, onRenderResized)
+EVT_BUTTON(VIDEO_BTN_ID, generateVid) 
+EVT_COLLAPSIBLEPANE_CHANGED(RENDER_ID, onRdrPaneResized)
+EVT_COLLAPSIBLEPANE_CHANGED(VIDEO_ID, onVidPaneResized)
+EVT_BUTTON(LOAD_BTN_ID, onLoadParamsFromFile)
 wxEND_EVENT_TABLE()
 
 ExplorerWindow::ExplorerWindow(wxWindow* parent) : wxWindow(parent, wxID_ANY)
@@ -254,14 +261,110 @@ ExplorerWindow::ExplorerWindow(wxWindow* parent) : wxWindow(parent, wxID_ANY)
 
 		renderSizer->AddSpacer(10);
 
-		progressDisplay = new wxStaticText(renderPanel->GetPane(), wxID_ANY, "not generating");
-		renderSizer->Add(progressDisplay, 0, wxALL | wxALIGN_CENTER);
+		rdrProgressDisplay = new wxStaticText(renderPanel->GetPane(), wxID_ANY, "not generating");
+		renderSizer->Add(rdrProgressDisplay, 0, wxALL | wxALIGN_CENTER);
+
+	videoPanel = new wxCollapsiblePane(leftPanel, VIDEO_ID, "video", wxDefaultPosition, wxDefaultSize, wxCP_NO_TLW_RESIZE);
+	wxBoxSizer* videoSizer = new wxBoxSizer(wxVERTICAL);
+	videoPanel->GetPane()->SetSizer(videoSizer);
+
+		wxBoxSizer* vidWidthSizer = new wxBoxSizer(wxHORIZONTAL);
+		wxStaticText* vidWidthLabel = new wxStaticText(videoPanel->GetPane(), wxID_ANY, "width: ");
+		vidWidthSizer->Add(vidWidthLabel, 1, wxLEFT | wxALIGN_CENTER_VERTICAL, 10);
+		vidWidthInput = new wxSpinCtrl(videoPanel->GetPane(), wxID_ANY, "1920", wxDefaultPosition, wxSize(60, wxDefaultSize.y), wxSP_ARROW_KEYS, 0, 500000);
+		vidWidthSizer->Add(vidWidthInput, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 10);
+		videoSizer->Add(vidWidthSizer, 0, wxEXPAND);
+
+		videoSizer->AddSpacer(10);
+
+		wxBoxSizer* vidHeightSizer = new wxBoxSizer(wxHORIZONTAL);
+		wxStaticText* vidHeightLabel = new wxStaticText(videoPanel->GetPane(), wxID_ANY, "height: ");
+		vidHeightSizer->Add(vidHeightLabel, 1, wxLEFT | wxALIGN_CENTER_VERTICAL, 10);
+		vidHeightInput = new wxSpinCtrl(videoPanel->GetPane(), wxID_ANY, "1080", wxDefaultPosition, wxSize(60, wxDefaultSize.y), wxSP_ARROW_KEYS, 0, 500000);
+		vidHeightSizer->Add(vidHeightInput, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 10);
+		videoSizer->Add(vidHeightSizer, 0, wxEXPAND);
+
+		videoSizer->AddSpacer(10);
+
+		wxBoxSizer* vidItersSizer = new wxBoxSizer(wxHORIZONTAL);
+		wxStaticText* vidItersLabel = new wxStaticText(videoPanel->GetPane(), wxID_ANY, "iteration factor: ");
+		vidItersSizer->Add(vidItersLabel, 1, wxLEFT | wxALIGN_CENTER_VERTICAL, 10);
+		vidItersInput = new wxSpinCtrl(videoPanel->GetPane(), wxID_ANY, "400", wxDefaultPosition, wxSize(60, wxDefaultSize.y), wxSP_ARROW_KEYS, 0, 1e10);
+		vidItersSizer->Add(vidItersInput, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 10);
+		videoSizer->Add(vidItersSizer, 0, wxEXPAND);
+
+		videoSizer->AddSpacer(10);
+
+		wxBoxSizer* vidQualitySizer = new wxBoxSizer(wxHORIZONTAL);
+		wxStaticText* vidQualityLabel = new wxStaticText(videoPanel->GetPane(), wxID_ANY, "quality: ");
+		vidQualitySizer->Add(vidQualityLabel, 1, wxLEFT | wxALIGN_CENTER_VERTICAL, 10);
+		vidQualityInput = new wxSpinCtrl(videoPanel->GetPane(), wxID_ANY, "2");
+		vidQualitySizer->Add(vidQualityInput, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 10);
+		videoSizer->Add(vidQualitySizer, 0, wxEXPAND);
+
+		videoSizer->AddSpacer(10);
+
+		wxBoxSizer* vidFragmentsSizer = new wxBoxSizer(wxHORIZONTAL);
+		wxStaticText* vidFragmentsLabel = new wxStaticText(videoPanel->GetPane(), wxID_ANY, "number of fragments: ");
+		vidFragmentsSizer->Add(vidFragmentsLabel, 1, wxLEFT | wxALIGN_CENTER_VERTICAL, 10);
+		vidFragmentsInput = new wxSpinCtrl(videoPanel->GetPane(), wxID_ANY, "10", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 10000);
+		vidFragmentsSizer->Add(vidFragmentsInput, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 10);
+		videoSizer->Add(vidFragmentsSizer, 0, wxEXPAND);
+
+		videoSizer->AddSpacer(10);
+
+		wxBoxSizer* vidFpsSizer = new wxBoxSizer(wxHORIZONTAL);
+		wxStaticText* vidFpsLabel = new wxStaticText(videoPanel->GetPane(), wxID_ANY, "number of FPS: ");
+		vidFpsSizer->Add(vidFpsLabel, 1, wxLEFT | wxALIGN_CENTER_VERTICAL, 10);
+		vidFpsInput = new wxSpinCtrl(videoPanel->GetPane(), wxID_ANY, "60", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 10000);
+		vidFpsSizer->Add(vidFpsInput, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 10);
+		videoSizer->Add(vidFpsSizer, 0, wxEXPAND);
+
+		videoSizer->AddSpacer(10);
+
+		wxBoxSizer* vidFirstFrameSizer = new wxBoxSizer(wxHORIZONTAL);
+		wxStaticText* vidFirstFrameLabel = new wxStaticText(videoPanel->GetPane(), wxID_ANY, "first frame index: ");
+		vidFirstFrameSizer->Add(vidFirstFrameLabel, 1, wxLEFT | wxALIGN_CENTER_VERTICAL, 10);
+		vidFirstFrameInput = new wxSpinCtrl(videoPanel->GetPane(), wxID_ANY, "0", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 1e6);
+		vidFirstFrameSizer->Add(vidFirstFrameInput, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 10);
+		videoSizer->Add(vidFirstFrameSizer, 0, wxEXPAND);
+
+		videoSizer->AddSpacer(10);
+
+		wxBoxSizer* vidFramesSizer = new wxBoxSizer(wxHORIZONTAL);
+		wxStaticText* vidFramesLabel = new wxStaticText(videoPanel->GetPane(), wxID_ANY, "number of frames: ");
+		vidFramesSizer->Add(vidFramesLabel, 1, wxLEFT | wxALIGN_CENTER_VERTICAL, 10);
+		vidFramesInput = new wxSpinCtrl(videoPanel->GetPane(), wxID_ANY, "1000", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 1000000);
+		vidFramesSizer->Add(vidFramesInput, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 10);
+		videoSizer->Add(vidFramesSizer, 0, wxEXPAND);
+
+		videoSizer->AddSpacer(10);
+
+		wxBoxSizer* vidNameSizer = new wxBoxSizer(wxHORIZONTAL);
+		vidNameInput = new wxTextCtrl(videoPanel->GetPane(), wxID_ANY, "video_name");
+		vidNameSizer->Add(vidNameInput, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 10);
+		videoSizer->Add(vidNameSizer, 0, wxEXPAND);
+
+		videoSizer->AddSpacer(10);
+
+		videoButton = new wxButton(videoPanel->GetPane(), VIDEO_BTN_ID, "GENERATE VIDEO");
+		videoSizer->Add(videoButton, 0, wxALL | wxALIGN_CENTER);
+
+		videoSizer->AddSpacer(10);
+
+		vidFramesProgressDisplay = new wxStaticText(videoPanel->GetPane(), wxID_ANY, "not generating");
+		videoSizer->Add(vidFramesProgressDisplay, 0, wxALL | wxALIGN_CENTER);
 
 
 	leftSizer->Add(renderPanel, 1, wxEXPAND);
+	leftSizer->AddSpacer(10);
+	leftSizer->Add(videoPanel, 1, wxEXPAND);
 
 	leftSizer->AddSpacer(10);
-	leftSizer->Add(new wxStaticLine(leftPanel, wxID_ANY), 0, wxEXPAND);
+
+	loadFromFileButton = new wxButton(leftPanel, LOAD_BTN_ID, "LOAD PARAMETERS FROM FILE");
+	leftSizer->Add(loadFromFileButton, 0, wxALL | wxALIGN_CENTER);
+
 	leftSizer->AddSpacer(10);
 
 	leftPanel->SetSizer(leftSizer);
@@ -347,10 +450,10 @@ void ExplorerWindow::onKeyPressed(wxKeyEvent& evt)
 
 void ExplorerWindow::saveImg(wxCommandEvent& evt)
 {
-	progressDisplay->SetLabelText(wxString::Format(wxT("starting to generate..."), evt.GetInt(), rdrFragmentsInput->GetValue()));
+	rdrProgressDisplay->SetLabelText(wxString::Format(wxT("starting to generate..."), evt.GetInt(), rdrFragmentsInput->GetValue()));
 	if (rdrHeightInput->GetValue() % rdrFragmentsInput->GetValue() == 0 && rdrWidthInput->GetValue() % 20 == 0)
 	{
-		explorer->renderFullFragmented(
+		explorer->generateImg(
 			rdrItersInput->GetValue(),
 			rdrWidthInput->GetValue(),
 			rdrHeightInput->GetValue(),
@@ -365,23 +468,134 @@ void ExplorerWindow::saveImg(wxCommandEvent& evt)
 	evt.Skip();
 }
 
-void ExplorerWindow::displayProgress(wxCommandEvent& evt)
+void ExplorerWindow::generateVid(wxCommandEvent& evt)
 {
-	if (evt.GetInt() == rdrFragmentsInput->GetValue())
+	vidFramesProgressDisplay->SetLabelText(wxString::Format(wxT("starting to generate..."), evt.GetInt(), vidFragmentsInput->GetValue()));
+	if (vidHeightInput->GetValue() % vidFragmentsInput->GetValue() == 0 && vidWidthInput->GetValue() % 20 == 0)
 	{
-		progressDisplay->SetLabelText("finished generating");
+		explorer->generateVideo(
+			std::string(vidNameInput->GetValue().mb_str()),
+			vidFpsInput->GetValue(),
+			vidFramesInput->GetValue(),
+			vidItersInput->GetValue(),
+			vidWidthInput->GetValue(),
+			vidHeightInput->GetValue(),
+			vidQualityInput->GetValue(),
+			vidFragmentsInput->GetValue(),
+			vidFirstFrameInput->GetValue()
+		);
 	}
 	else
 	{
-		progressDisplay->SetLabelText(wxString::Format(wxT("generated %d / %d fragments"), evt.GetInt(), rdrFragmentsInput->GetValue()));
+		wxMessageBox("The number of fragments must be a divisor of the height and the width must be a multiple of 20 pixels");
+	}
+	evt.Skip();
+}
+
+void ExplorerWindow::displayFragsProgress(wxCommandEvent& evt)
+{
+	if (evt.GetInt() == rdrFragmentsInput->GetValue())
+	{
+		rdrProgressDisplay->SetLabelText("finished generating");
+	}
+	else
+	{
+		rdrProgressDisplay->SetLabelText(wxString::Format(wxT("generated %d / %d fragments"), evt.GetInt(), rdrFragmentsInput->GetValue()));
 	}
 	renderPanel->Layout();
 	evt.Skip();
 }
 
-void ExplorerWindow::onRenderResized(wxCollapsiblePaneEvent& evt)
+void ExplorerWindow::displayFramesProgress(wxCommandEvent& evt)
 {
+	if (evt.GetInt() == vidFramesInput->GetValue())
+	{
+		vidFramesProgressDisplay->SetLabelText("finished generating");
+	}
+	else
+	{
+		vidFramesProgressDisplay->SetLabelText(wxString::Format(wxT("generated %d / %d frames"), evt.GetInt(), vidFramesInput->GetValue()));
+	}
+	videoPanel->Layout();
+	evt.Skip();
+}
+
+void ExplorerWindow::onRdrPaneResized(wxCollapsiblePaneEvent& evt)
+{
+	if (evt.GetCollapsed())
+	{
+		videoPanel->Show(true);
+	}
+	else
+	{
+		videoPanel->Show(false);
+	}
 	Layout();
+	evt.Skip();
+}
+
+void ExplorerWindow::onVidPaneResized(wxCollapsiblePaneEvent& evt)
+{
+	if (evt.GetCollapsed())
+	{
+		renderPanel->Show(true);
+	}
+	else
+	{
+		renderPanel->Show(false);
+	}
+	Layout();
+	evt.Skip();
+}
+
+void ExplorerWindow::onLoadParamsFromFile(wxCommandEvent& evt)
+{
+	wxFileDialog
+		openFileDialog(this, _("Choose a file to load parameters from"), "", "",
+			"text files (*.txt)|*.txt", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+	if (openFileDialog.ShowModal() == wxID_CANCEL)
+		return;     // the user changed idea...
+
+	std::string filename(openFileDialog.GetPath());
+	std::ifstream paramsFile(filename);
+	std::string line;
+
+	std::getline(paramsFile, line);
+	vidNameInput->ChangeValue(line);
+
+	std::getline(paramsFile, line);
+	vidFpsInput->SetValue(std::stoi(line));
+
+	std::getline(paramsFile, line);
+	vidFramesInput->SetValue(std::stoi(line));
+
+	std::getline(paramsFile, line);
+	vidItersInput->SetValue(std::stoi(line));
+
+	std::getline(paramsFile, line);
+	vidWidthInput->SetValue(std::stoi(line));
+
+	std::getline(paramsFile, line);
+	vidHeightInput->SetValue(std::stoi(line));
+
+	std::getline(paramsFile, line);
+	vidQualityInput->SetValue(std::stoi(line));
+
+	std::getline(paramsFile, line);
+	vidFragmentsInput->SetValue(std::stoi(line));
+
+	std::getline(paramsFile, line);
+	double centerX = std::stod(line);
+	std::getline(paramsFile, line);
+	double centerY = std::stod(line);
+	explorer->setCenter(centerX, centerY);
+
+	std::getline(paramsFile, line);
+	explorer->setZoom(std::stod(line));
+	wxCommandEvent a;
+	updateDisplays(a);
+
+	paramsFile.close();
 	evt.Skip();
 }
 

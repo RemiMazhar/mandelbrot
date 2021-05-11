@@ -42,6 +42,25 @@ void PreviewGL::initUniforms()
     glUniform1f(colorFrequencyLocation, colorFrequency);
 }
 
+GLuint PreviewGL::loadColormap(std::string cmapName)
+{
+    cv::Mat texImg = cv::imread(cmapName);
+
+    glGenTextures(1, &cmapTexture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_1D, cmapTexture);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, texImg.cols, 0,
+        GL_BGR, GL_UNSIGNED_BYTE, texImg.data);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_BASE_LEVEL, 0);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAX_LEVEL, 0);
+    glBindTexture(GL_TEXTURE_1D, 0);
+
+    GLuint gaussianTextureUnif = glGetUniformLocation(mandelbrotProgramID, "colormapTexture");
+    glUniform1i(gaussianTextureUnif, cmapTexture);
+
+    return cmapTexture;
+}
+
 GLhandleARB PreviewGL::loadShader(const char* filename)
 {
     std::ifstream ft(filename);
@@ -88,15 +107,8 @@ GLhandleARB PreviewGL::loadShaders()
 
 void PreviewGL::prepare2DViewport(int topleft_x, int topleft_y, int bottomrigth_x, int bottomrigth_y)
 {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Black Background
     glDisable(GL_DEPTH_TEST);
-
     glViewport(topleft_x, topleft_y, bottomrigth_x - topleft_x, bottomrigth_y - topleft_y);
-    glMatrixMode(GL_2D);
-    glLoadIdentity();
-
-    gluOrtho2D(topleft_x, bottomrigth_x, bottomrigth_y, topleft_y);
-    glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
 
@@ -107,13 +119,13 @@ void PreviewGL::render(wxPaintEvent& evt)
     wxGLCanvas::SetCurrent(*m_context);
     wxPaintDC(this); // only to be used in paint events. use wxClientDC to paint outside the paint event
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_1D, cmapTexture);
+
+    glClear(GL_COLOR_BUFFER_BIT);
     prepare2DViewport(0, 0, getWidth(), getHeight());
     glUniform2f(windowSizeLocation, getWidth(), getHeight());
-    // ------------- draw some 2D ----------------
     glLoadIdentity();
-    // white background
-    glColor4f(1, 1, 1, 1);
     glBegin(GL_QUADS);
     glVertex2f(-getWidth(), -getHeight());
     glVertex2f(getWidth(), -getHeight());
@@ -123,6 +135,9 @@ void PreviewGL::render(wxPaintEvent& evt)
 
     glFlush();
     SwapBuffers();
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_1D, 0);
 }
 
 int PreviewGL::getWidth()
@@ -186,6 +201,10 @@ void PreviewGL::setQuality(int qualityArg)
 void PreviewGL::setColormap(const char* filename)
 {
     colormapFilename = filename;
+    if (colormapFilename.substr(colormapFilename.find_last_of(".") + 1) != "frag") {
+        colormapFilename = "colormaps/textureColormap.frag";
+        loadColormap(filename);
+    }
     mandelbrotShader = loadShaders();
     mandelbrotProgramID = glCreateProgramObjectARB();
     glAttachObjectARB(mandelbrotProgramID, mandelbrotShader);

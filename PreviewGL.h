@@ -26,9 +26,6 @@ class PreviewGL : public wxGLCanvas
 protected:
 	wxGLContext* m_context;
 
-	GLuint mandelbrotProgramID;
-	GLuint colormapProgramID;
-
 	// parameters for rendering
 	double zoom = 0.25;
 	double centerX = 0.f;
@@ -52,10 +49,17 @@ protected:
 	GLhandleARB mandelbrotShader;
 	GLhandleARB colormapShader;
 
+	GLuint cmapTexture;
+
 	void initUniforms();
 
 public:
+	GLuint mandelbrotProgramID;
+	GLuint colormapProgramID;
+
 	PreviewGL(wxWindow* parent, int id, int* args);
+
+	GLuint loadColormap(std::string cmapName);
 
 	GLhandleARB loadShader(const char* filename);
 	GLhandleARB loadShaders(std::vector<std::string> filenames);
